@@ -2,7 +2,7 @@
 
 This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](https://github.com/pseudo-url/fastmcp) and [librosa](https://librosa.org/) for audio analysis.
 
-## Usage
+## Usage with Claude Desktop
 
 <img src="screen.png" alt="alt text" width="50%">
 

@@ -2,6 +2,10 @@
 
 This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](https://github.com/pseudo-url/fastmcp) and [librosa](https://librosa.org/) for audio analysis.
 
+## Usage
+
+<img src="screen.png" alt="alt text" width="50%">
+
 ## Installation
 
 1. Clone or download this repository.
@@ -17,12 +21,6 @@ pip3 install -r requirements.txt
 ```bash
 fastmcp install server.py
 ```
-
-Note: Make sure you have a compatible version of Python (3.7+ recommended).
-
-## Usage
-
-![alt text](screen.png)
 
 ## Example Prompts
 

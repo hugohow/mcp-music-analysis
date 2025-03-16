@@ -1,4 +1,4 @@
-# MCP Audio Analysis
+# MCP Music Analysis
 
 This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](https://github.com/pseudo-url/fastmcp) and [librosa](https://librosa.org/) for audio analysis.
 
@@ -33,6 +33,14 @@ Please compute the MFCC for this file: /path/to/another_audio.mp3
 What are the spectral centroid values for /path/to/music.wav?
 I'd like to know the onset times for /path/to/drum_loop.wav
 ```
+
+## To-Do List
+
+- [ ] Add URL to audio file download
+- [ ] Add YouTube to audio file transformation
+- [ ] Improve installation guide
+- [ ] Integrate Whisper for lyrics
+- [ ] Implement Docker solution
 
 ## Author
 

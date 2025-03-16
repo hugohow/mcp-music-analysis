@@ -7,16 +7,26 @@ This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](
 1. Clone or download this repository.
 
 2. Install dependencies from `requirements.txt`:
-   pip3 install -r requirements.txt
-3. Install the MCP:
-   fastmcp install server.py
 
-   Note: Make sure you have a compatible version of Python (3.7+ recommended).
+```bash
+pip3 install -r requirements.txt
+```
+
+3. Install the MCP:
+
+```bash
+fastmcp install server.py
+```
+
+Note: Make sure you have a compatible version of Python (3.7+ recommended).
 
 ## Usage
 
 1. Run the MCP server:
-   python server.py
+
+```bash
+python server.py
+```
 
 2. Interact with the server using your preferred method (CLI, Python script, web interface, etc.).
 
@@ -24,8 +34,14 @@ This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](
 
 Here are some sample prompts you might use in a conversational or chat-based context once the server is running. The MCP will understand these requests and execute the relevant tools:
 
+```
 Can you analyze the beat of /Users/hugohow-choong/Desktop/sample-6s.mp3?
 Could you give me the duration of /path/to/audio.wav?
 Please compute the MFCC for this file: /path/to/another_audio.mp3
 What are the spectral centroid values for /path/to/music.wav?
 I'd like to know the onset times for /path/to/drum_loop.wav
+```
+
+## Author
+
+Hugo How-Choong

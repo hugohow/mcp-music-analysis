@@ -22,13 +22,7 @@ Note: Make sure you have a compatible version of Python (3.7+ recommended).
 
 ## Usage
 
-1. Run the MCP server:
-
-```bash
-python server.py
-```
-
-2. Interact with the server using your preferred method (CLI, Python script, web interface, etc.).
+![alt text](screen.png)
 
 ## Example Prompts
 

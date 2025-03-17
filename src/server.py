@@ -8,13 +8,12 @@ import numpy as np
 import os
 import tempfile
 import requests
-
-# from pytube import YouTube
+from pytubefix import YouTube
 
 # Create an MCP server with a descriptive name and relevant dependencies
 mcp = FastMCP(
     "Music Analysis with librosa",
-    dependencies=["librosa", "matplotlib", "numpy", "requests"],
+    dependencies=["librosa", "matplotlib", "numpy", "requests", "pytube"],
     description="An MCP server for analyzing audio files using librosa.",
 )
 
@@ -243,6 +242,11 @@ def download_from_url(url: str) -> str:
     """
     Downloads a file from a given URL and returns the path to the downloaded file.
     """
+
+    # mettre une exception si ce n'est pas un fichier audio !
+    if not url.endswith(".mp3") and not url.endswith(".wav"):
+        raise ValueError(f"URL: {url} is not a valid audio file")
+
     response = requests.get(url)
     if response.status_code == 200:
         file_path = os.path.join(tempfile.gettempdir(), "downloaded_file")
@@ -251,6 +255,18 @@ def download_from_url(url: str) -> str:
         return file_path
     else:
         raise ValueError(f"Failed to download file from URL: {url}")
+
+
+@mcp.tool()
+def download_from_youtube(youtube_url: str) -> str:
+    """
+    Downloads a file from a given youtube URL and returns the path to the downloaded file.
+    """
+    yt = YouTube(youtube_url)
+    ys = yt.streams.get_audio_only()
+
+    path = ys.download()
+    return path
 
 
 # @mcp.tool()

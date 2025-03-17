@@ -1,6 +1,6 @@
 # MCP Music Analysis
 
-This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](https://github.com/pseudo-url/fastmcp) and [librosa](https://librosa.org/) for audio analysis.
+This repository contains a **Model Context Provider (MCP)** that uses MCP and [librosa](https://librosa.org/) for audio analysis on audio in local, youtube link, or audio link.
 
 ## Usage with Claude Desktop
 
@@ -11,23 +11,26 @@ This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](
 
 ## Installation
 
+```
+python3 -V
+```
+
+must be > 3.6
+
 1. Clone or download this repository.
 
 ```bash
 git clone git@github.com:hugohow/mcp-music-analysis.git
 cd mcp-music-analysis
+pwd
 ```
 
-2. Install dependencies from `requirements.txt`:
+Copy-past the path
 
-```bash
-pip3 install -r requirements.txt
+On MacOS: ~/Library/Application\ Support/Claude/claude_desktop_config.json On Windows: %APPDATA%/Claude/claude_desktop_config.json
+
 ```
-
-3. Install the MCP:
-
-```bash
-fastmcp install src/server.py
+"mcpServers": { "Music Analysis with librosa": { "command": "uv", "args": [ "--directory", "PATH", "run", "src/server.py" ] } }
 ```
 
 It's now available on Claude Desktop.
@@ -41,13 +44,14 @@ Can you analyze the beat of /Users/hugohow-choong/Desktop/sample-6s.mp3?
 Could you give me the duration of https://download.samplelib.com/mp3/sample-15s.mp3 ?
 Please compute the MFCC for this file: /path/to/another_audio.mp3
 What are the spectral centroid values for /path/to/music.wav?
-I'd like to know the onset times for /path/to/drum_loop.wav
+I'd like to know the onset times for https://www.youtube.com/watch?v=8HFiFd9vx1c
 ```
 
 ## To-Do List
 
 - [x] Add URL to audio file download
 - [ ] Add YouTube to audio file transformation
+- [ ] Experiment with multiple Python environments (testing)
 - [ ] Improve installation guide
 - [ ] Integrate Whisper for lyrics
 - [ ] Implement a Docker solution

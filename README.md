@@ -4,11 +4,17 @@ This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](
 
 ## Usage with Claude Desktop
 
-<img src="screen.png" alt="alt text" width="50%">
+<img src="public/screen.png" alt="alt text" width="40%">
+<img src="public/screen1.png" alt="alt text" width="40%">
 
 ## Installation
 
 1. Clone or download this repository.
+
+```bash
+git clone git@github.com:hugohow/mcp-music-analysis.git
+cd mcp-music-analysis
+```
 
 2. Install dependencies from `requirements.txt`:
 
@@ -19,8 +25,10 @@ pip3 install -r requirements.txt
 3. Install the MCP:
 
 ```bash
-fastmcp install server.py
+fastmcp install src/server.py
 ```
+
+It's now available on Claude Desktop.
 
 ## Example Prompts
 
@@ -28,7 +36,7 @@ Here are some sample prompts you might use in a conversational or chat-based con
 
 ```
 Can you analyze the beat of /Users/hugohow-choong/Desktop/sample-6s.mp3?
-Could you give me the duration of /path/to/audio.wav?
+Could you give me the duration of https://download.samplelib.com/mp3/sample-15s.mp3 ?
 Please compute the MFCC for this file: /path/to/another_audio.mp3
 What are the spectral centroid values for /path/to/music.wav?
 I'd like to know the onset times for /path/to/drum_loop.wav
@@ -36,11 +44,11 @@ I'd like to know the onset times for /path/to/drum_loop.wav
 
 ## To-Do List
 
-- [ ] Add URL to audio file download
+- [x] Add URL to audio file download
 - [ ] Add YouTube to audio file transformation
 - [ ] Improve installation guide
 - [ ] Integrate Whisper for lyrics
-- [ ] Implement Docker solution
+- [ ] Implement a Docker solution
 
 ## Author
 

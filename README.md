@@ -19,10 +19,11 @@ cd mcp-music-analysis
 pwd
 ```
 
-Copy-past the path
+Copy the path
 
 On MacOS: ~/Library/Application\ Support/Claude/claude_desktop_config.json On Windows: %APPDATA%/Claude/claude_desktop_config.json
 
+past the path instead of PATH
 ```
 "mcpServers": { "Music Analysis with librosa": { "command": "uv", "args": [ "--directory", "PATH", "run", "src/server.py" ] } }
 ```

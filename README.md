@@ -4,8 +4,10 @@ This repository contains a **Model Context Provider (MCP)** that uses [FastMCP](
 
 ## Usage with Claude Desktop
 
-<img src="public/screen.png" alt="alt text" width="40%">
-<img src="public/screen1.png" alt="alt text" width="40%">
+<div style="display: flex; gap: 1rem;">
+  <img src="public/screen.png" alt="alt text" width="40%">
+  <img src="public/screen1.png" alt="alt text" width="40%">
+</div>
 
 ## Installation
 

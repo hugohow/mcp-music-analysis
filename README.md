@@ -11,12 +11,6 @@ This repository contains a **Model Context Provider (MCP)** that uses MCP and [l
 
 ## Installation
 
-```
-python3 -V
-```
-
-must be > 3.6
-
 1. Clone or download this repository.
 
 ```bash

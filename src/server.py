@@ -1,14 +1,21 @@
 # server.py
 
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Image
 import librosa
+import matplotlib.pyplot as plt
+import librosa.display
+import numpy as np
+import os
+import tempfile
+import requests
 
-# import numpy as np
+# from pytube import YouTube
 
 # Create an MCP server with a descriptive name and relevant dependencies
 mcp = FastMCP(
-    "Comprehensive Audio Analysis with librosa",
-    dependencies=["librosa"],
+    "Music Analysis with librosa",
+    dependencies=["librosa", "matplotlib", "numpy", "requests"],
+    description="An MCP server for analyzing audio files using librosa.",
 )
 
 ###############################################################################
@@ -161,6 +168,101 @@ def onset_times(file_path: str) -> list:
     return onset_times_sec.tolist()
 
 
+@mcp.tool()
+def separate_harmonic_percussive(file_path: str) -> dict:
+    """
+    Separates the audio signal into harmonic and percussive components
+    and returns the length (in samples) of each part.
+    """
+    y, sr = librosa.load(file_path)
+    y_harm, y_perc = librosa.effects.hpss(y)
+    return {"harmonic_length": len(y_harm), "percussive_length": len(y_perc)}
+
+
+@mcp.tool()
+def plot_spectrogram(file_path: str) -> str:
+    """
+    Generates a spectrogram image from the audio signal and saves it as 'spectrogram.png'.
+    It won't display automatically; the user must open the resulting path themselves.
+    Returns the path to the saved image.
+    """
+    y, sr = librosa.load(file_path)
+    plt.figure()
+    D = librosa.amplitude_to_db(librosa.stft(y), ref=np.max)
+    librosa.display.specshow(D, sr=sr, x_axis="time", y_axis="log")
+    plt.title("Spectrogram")
+    plt.colorbar(format="%+2.f dB")
+    output_path = os.path.join(tempfile.gettempdir(), "spectrogram.png")
+    plt.savefig(output_path)
+    plt.close()
+    with open(output_path, "rb") as f:
+        data = f.read()
+    return Image(data=data, format="png")
+
+
+@mcp.tool()
+def plot_waveform(file_path: str) -> str:
+    """
+    Generates a waveform image from the audio signal and saves it as 'waveform.png'.
+    It won't display automatically; the user must open the resulting path themselves.
+    """
+    y, sr = librosa.load(file_path)
+    plt.figure()
+    librosa.display.waveshow(y, sr=sr)
+    plt.title("Waveform")
+    output_path = os.path.join(tempfile.gettempdir(), "waveform.png")
+    plt.savefig(output_path)
+    plt.close()
+    with open(output_path, "rb") as f:
+        data = f.read()
+    return Image(data=data, format="png")
+
+
+@mcp.tool()
+def plot_chromagram(file_path: str) -> str:
+    """
+    Generates a chromagram image from the audio signal and saves it as 'chromagram.png'.
+    It won't display automatically; the user must open the resulting path themselves.
+    """
+    y, sr = librosa.load(file_path)
+    chroma = librosa.feature.chroma_stft(y=y, sr=sr)
+    plt.figure()
+    librosa.display.specshow(chroma, sr=sr, x_axis="time", y_axis="chroma")
+    plt.title("Chromagram")
+    plt.colorbar()
+    output_path = os.path.join(tempfile.gettempdir(), "chromagram.png")
+    plt.savefig(output_path)
+    plt.close()
+    with open(output_path, "rb") as f:
+        data = f.read()
+    return Image(data=data, format="png")
+
+
+@mcp.tool()
+def download_from_url(url: str) -> str:
+    """
+    Downloads a file from a given URL and returns the path to the downloaded file.
+    """
+    response = requests.get(url)
+    if response.status_code == 200:
+        file_path = os.path.join(tempfile.gettempdir(), "downloaded_file")
+        with open(file_path, "wb") as file:
+            file.write(response.content)
+        return file_path
+    else:
+        raise ValueError(f"Failed to download file from URL: {url}")
+
+
+# @mcp.tool()
+# def download_from_youtube(youtube_url: str) -> str:
+#     """
+#     Downloads a file from a given youtbe URL and returns the path to the downloaded file.
+#     """
+#     yt = YouTube(youtube_url)
+#     yt.streams.filter(only_audio=True).first().download(tempfile.gettempdir())
+#     return os.path.join(tempfile.gettempdir(), yt.title + ".mp4")
+
+
 ###############################################################################
 # PROMPT
 ###############################################################################
@@ -173,7 +275,7 @@ def analyze_audio() -> str:
     the text below to explain how users can interact with the tools.
     """
     return (
-        "Welcome to the Comprehensive Audio Analysis MCP! Please provide "
+        "Welcome to the Music Analysis MCP! Please provide "
         "the path to an audio file and call the tools listed below to extract "
         "various audio features.\n\n"
         "Available tools:\n"
@@ -190,6 +292,11 @@ def analyze_audio() -> str:
         "- mfcc(file_path) -> MFCC coefficients (2D array)\n"
         "- chroma_stft(file_path) -> Chroma features (2D array)\n"
         "- onset_times(file_path) -> Detected onset times in seconds\n\n"
+        "- separate_harmonic_percussive(file_path) -> Length of harmonic and percussive components\n"
+        "- plot_spectrogram(file_path) -> Path to saved spectrogram image\n\n"
+        "- plot_waveform(file_path) -> Path to saved waveform image\n\n"
+        "- plot_chromagram(file_path) -> Path to saved chromagram image\n\n"
+        "- download_from_url(url) -> Path to downloaded file\n\n"
         "Example usage:\n"
         ">>> beat('my_audio.wav')\n"
         ">>> mfcc('my_audio.wav', n_mfcc=20)\n"

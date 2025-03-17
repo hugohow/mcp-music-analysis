@@ -1,5 +1,5 @@
 [project]
-name = "music-server"
+name = "mcp-music-analysis"
 version = "0.1.0"
 description = "\\A MCP server with music tools\\"
 readme = "README.md"

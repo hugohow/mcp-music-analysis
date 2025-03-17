@@ -50,7 +50,7 @@ I'd like to know the onset times for https://www.youtube.com/watch?v=8HFiFd9vx1c
 ## To-Do List
 
 - [x] Add URL to audio file download
-- [ ] Add YouTube to audio file transformation
+- [x] Add YouTube to audio file transformation
 - [ ] Experiment with multiple Python environments (testing)
 - [ ] Improve installation guide
 - [ ] Integrate Whisper for lyrics

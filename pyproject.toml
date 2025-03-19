@@ -1,5 +1,5 @@
 
-[tool.poetry]
+[project]
 name = "mcp-music-analysis"
 version = "0.1.0"
 description = "\\A MCP server with music tools\\"
@@ -35,6 +35,9 @@ testpaths = [
     "tests"
 ]
 
+[[project.authors]]
+name = "hugohow"
+email = "hugohowchoong@gmail.com"
 
 [project.urls]
 Homepage = "https://github.com/hugohow/mcp-music-analysis"

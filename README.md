@@ -30,7 +30,7 @@ The configuration file location depends on your operating system:
 
 - **macOS**:
   ```
-  ~/Library/Application Support/Claude/claude_desktop_config.json
+  ~/Library/Application\ Support/Claude/claude_desktop_config.json
   ```
 
 - **Windows**:

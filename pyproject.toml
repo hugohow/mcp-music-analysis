@@ -1,4 +1,5 @@
-[project]
+
+[tool.poetry]
 name = "mcp-music-analysis"
 version = "0.1.0"
 description = "\\A MCP server with music tools\\"
@@ -18,6 +19,11 @@ dependencies = [
 requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
 
+
+[tool.poetry.scripts]
+mcp-music-analysis = "mcp_music_analysis:main"
+
+
 [project.scripts]
 mcp-music-analysis = "mcp_music_analysis:main"
 
@@ -29,9 +35,6 @@ testpaths = [
     "tests"
 ]
 
-[[project.authors]]
-name = "hugohow"
-email = "hugohowchoong@gmail.com"
 
 [project.urls]
 Homepage = "https://github.com/hugohow/mcp-music-analysis"

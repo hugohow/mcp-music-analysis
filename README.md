@@ -22,16 +22,20 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install -e .
 ```
 
-Copy the path
+### Usage with Claude Desktop
 
-On MacOS: ~/Library/Application\ Support/Claude/claude_desktop_config.json On Windows: %APPDATA%/Claude/claude_desktop_config.json
+To use this with Claude Desktop, add the following to your `claude_desktop_config.json`:
 
-past the path instead of PATH
+```json
+{
+  "mcpServers": {
+    "music-analysis": {
+      "command": "uvx",
+      "args": ["-n", "mcp-music-analysis"]
+    }
+  }
+}
 ```
-"mcpServers": { "Music Analysis with librosa": { "command": "uv", "args": [ "--directory", "PATH", "run", "src/mcp_music_analysis/server.py" ] } }
-```
-
-It's now available on Claude Desktop.
 
 ## Example Prompts
 

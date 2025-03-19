@@ -264,8 +264,7 @@ def download_from_youtube(youtube_url: str) -> str:
     """
     yt = YouTube(youtube_url)
     ys = yt.streams.get_audio_only()
-
-    path = ys.download()
+    path = ys.download(filename=yt.video_id + ".mp4", output_path=tempfile.gettempdir())
     return path
 
 
@@ -331,5 +330,5 @@ if __name__ == "__main__":
 
 def main():
     # Run the MCP server
-    print("Server is running")
+    print("Running the MCP server")
     mcp.run()

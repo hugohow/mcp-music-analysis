@@ -11,12 +11,15 @@ This repository contains a **Model Context Provider (MCP)** that uses MCP and [l
 
 ## Installation
 
-1. Clone or download this repository.
-
 ```bash
+# Clone repository
 git clone git@github.com:hugohow/mcp-music-analysis.git
 cd mcp-music-analysis
-pwd
+
+# Create virtual environment and install
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -e .
 ```
 
 Copy-past the path
@@ -24,7 +27,7 @@ Copy-past the path
 On MacOS: ~/Library/Application\ Support/Claude/claude_desktop_config.json On Windows: %APPDATA%/Claude/claude_desktop_config.json
 
 ```
-"mcpServers": { "Music Analysis with librosa": { "command": "uv", "args": [ "--directory", "PATH", "run", "src/server.py" ] } }
+"mcpServers": { "Music Analysis with librosa": { "command": "uv", "args": [ "--directory", "PATH", "run", "src/mcp_music_analysis/server.py" ] } }
 ```
 
 It's now available on Claude Desktop.

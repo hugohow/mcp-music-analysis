@@ -3,9 +3,38 @@ name = "mcp-music-analysis"
 version = "0.1.0"
 description = "\\A MCP server with music tools\\"
 readme = "README.md"
-requires-python = "==3.11.0"
-dependencies = [ "fastmcp==0.4.1", "librosa>=0.9.2", "matplotlib>=3.5.1", "numpy>=1.21.0", "pytubefix==8.12.2" ]
+requires-python = ">=3.11.11"
+dependencies = [ 
+    "fastmcp==0.4.1", 
+    "librosa>=0.9.2", 
+    "matplotlib>=3.5.1", 
+    "numpy>=1.21.0", 
+    "pytubefix==8.12.2",
+    "asyncio>=3.4.3",
+]
+
+
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+mcp-music-analysis = "mcp_music_analysis:main"
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "."
+]
+testpaths = [
+    "tests"
+]
 
 [[project.authors]]
 name = "hugohow"
 email = "hugohowchoong@gmail.com"
+
+[project.urls]
+Homepage = "https://github.com/hugohow/mcp-music-analysis"
+Repository = "https://github.com/hugohow/mcp-music-analysis"
+Documentation = "https://github.com/hugohow/mcp-music-analysis"
+"Bug Tracker" = "https://github.com/hugohow/mcp-music-analysis/issues"

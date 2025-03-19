@@ -327,3 +327,9 @@ def analyze_audio() -> str:
 if __name__ == "__main__":
     # Run the MCP server
     mcp.run()
+
+
+def main():
+    # Run the MCP server
+    print("Server is running")
+    mcp.run()

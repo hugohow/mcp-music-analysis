@@ -24,7 +24,26 @@ uv pip install -e .
 
 ### Usage with Claude Desktop
 
-To use this with Claude Desktop, add the following to your `claude_desktop_config.json`:
+#### Locate Configuration File
+
+The configuration file location depends on your operating system:
+
+- **macOS**:
+  ```
+  ~/Library/Application Support/Claude/claude_desktop_config.json
+  ```
+
+- **Windows**:
+  ```
+  %APPDATA%\Claude\claude_desktop_config.json
+  ```
+
+- **Linux**:
+  ```
+  ~/.config/Claude/claude_desktop_config.json
+  ```
+
+Add the following to your `claude_desktop_config.json`:
 
 ```json
 {

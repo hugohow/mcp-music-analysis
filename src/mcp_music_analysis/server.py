@@ -1,6 +1,6 @@
 # server.py
 
-from fastmcp import FastMCP, Image, Context
+from fastmcp import FastMCP, Image
 import librosa
 import matplotlib.pyplot as plt
 import librosa.display
@@ -9,8 +9,6 @@ import os
 import tempfile
 import requests
 from pytubefix import YouTube
-from contextlib import asynccontextmanager
-from dataclasses import dataclass
 
 
 # Create an MCP server with a descriptive name and relevant dependencies

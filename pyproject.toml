@@ -1,7 +1,7 @@
 
 [project]
 name = "mcp-music-analysis"
-version = "0.1.1"
+version = "0.1.2"
 description = "\\A MCP server with music tools\\"
 readme = "README.md"
 requires-python = ">=3.11.11"

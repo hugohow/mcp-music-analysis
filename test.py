@@ -1,29 +1,61 @@
 import librosa
 import numpy as np
+import soundfile as sf
+import matplotlib.pyplot as plt
 
 
-path = "/tmp/YG4eDMUHjCo.mp4"
-
-begin = 1.5
-interval = 0.5
+path = "/tmp/TgntkGc5iBo.mp4"
 
 y, sr = librosa.load(path=path)
 chroma_cq = librosa.feature.chroma_cqt(y=y)
+# print(chroma_cq.shape)
 
-print(chroma_cq)
+# fig, ax = plt.subplots()
 
-print(chroma_cq.shape)
+fig, ax = plt.subplots(nrows=1, sharex=True, sharey=True)
+# librosa.display.specshow(chroma_cq, y_axis="chroma", x_axis="tempo", ax=ax[0])
+ax.plot(chroma_cq[0])
+ax.yaxis.set_major_formatter(librosa.display.ChromaFormatter())
+plt.colorbar()
+plt.show()
 
-time_frames = np.arange(chroma_cq.shape[1])
-time_seconds = librosa.frames_to_time(time_frames)
-notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+# ax.plot(chroma_cq[0])
+# ax.yaxis.set_m
 
-data_list = []
+# # (16218,)
+# # show the first chroma
+# librosa.display.specshow(chroma_cq, y_axis="chroma", x_axis="tempo")
+# plt.colorbar()
+# plt.title("Chromagram for the first chroma")
+# plt.tight_layout()
+# plt.show()
 
-for i, note_name in enumerate(notes):
-    # Pour chaque frame temporel (colonne)
-    for t, amplitude in zip(time_seconds, chroma_cq[i]):
-        if t >= begin and abs(t % interval) < 1e-2:
-            data_list.append({"note": note_name, "time": t, "amplitude": amplitude})
 
-print(data_list)
+# plt.figure(figsize=(10, 4))
+# librosa.display.specshow(chroma_cq, y_axis="chroma", x_axis="time")
+# plt.colorbar()
+# plt.title("Chromagram")
+# plt.tight_layout()
+# plt.show()
+
+
+# fig, axs = plt.subplots(nrows=12, sharex=True, figsize=(10, 12))
+# for i in range(12):
+#     img = librosa.display.specshow(chroma_cq[1, :], x_axis="time", ax=axs[i], sr=sr)
+#     axs[i].set(title=f"Chroma bin {i}")
+#     fig.colorbar(img, ax=axs[i])
+
+# plt.tight_layout()
+# plt.show()
+# take the first
+# chroma_cq
+# img1 = librosa.display.specshow(chroma_cq[0], y_axis="chroma", x_axis="time", ax=ax[0])
+# fig.colorbar(img1, ax=ax)
+# ax[0].set(title="Chromagram")
+# plt.show()
+# plt.figure(figsize=(10, 4))
+# librosa.display.specshow(chroma_cq, y_axis="chroma", x_axis="time")
+# plt.colorbar()
+# plt.title("Chromagram")
+# plt.tight_layout()
+# plt.show()

@@ -9,7 +9,7 @@ import os
 import tempfile
 import requests
 from pytubefix import YouTube
-
+import soundfile as sf
 
 # Create an MCP server with a descriptive name and relevant dependencies
 mcp = FastMCP(
@@ -33,6 +33,8 @@ def get_tempo(
     """
     Estimates the tempo (in BPM) of the given audio file using librosa.
     Offset and duration are optional, in seconds.
+
+    It's better to have only percussive sounds.
     """
     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
     tempo, _ = librosa.beat.beat_track(y=y)
@@ -48,6 +50,8 @@ def get_beats(
     """
     Returns a list of time positions (in seconds) of the detected beats.
     Offset and duration are in seconds.
+
+    It's better to have only percussive sounds.
     """
     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
     tempo, frames = librosa.beat.beat_track(y=y)
@@ -71,7 +75,7 @@ def get_chroma(
     n_octaves is the number of octaves to include in the chroma feature.
     interval is the time interval (in seconds) at which to sample the chroma feature.
 
-    The choice of offset and interval should fit the beat of the music.
+    It's better to have only harmonic sounds.
     """
     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
     chroma_cq = librosa.feature.chroma_cqt(y=y, fmin=fmin, n_octaves=n_octaves)
@@ -90,6 +94,79 @@ def get_chroma(
                 data_list.append({"note": note_name, "time": t, "amplitude": amplitude})
 
     return data_list
+
+
+@mcp.tool()
+def show_chroma(
+    file_path: str,
+    offset: float = 0.0,
+    duration: float = None,
+    fmin: float = None,
+    n_octaves: int = 7,
+    tempo_min: float = 60,
+) -> str:
+    """
+    Display the chroma feature of the audio file.
+    Offset and duration are in seconds.
+    fmin is the minimum frequency of the chroma feature.
+    n_octaves is the number of octaves to include in the chroma feature.
+
+    It's better to have only harmonic sounds.
+
+
+    It's just for visualisation, but use get_chroma for analysis.
+    """
+    y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
+    chroma_cq = librosa.feature.chroma_cqt(y=y, fmin=fmin, n_octaves=n_octaves)
+
+    plt.figure(figsize=(10, 4))
+    librosa.display.specshow(
+        chroma_cq, y_axis="chroma", x_axis="tempo", tempo_min=tempo_min
+    )
+    plt.colorbar()
+    plt.title("Chromagram")
+    plt.tight_layout()
+
+    image_path = os.path.join(tempfile.gettempdir(), "chroma.png")
+    plt.savefig(image_path)
+    plt.close()
+
+    with open(image_path, "rb") as f:
+        data = f.read()
+    return Image(data=data, format="png")
+
+
+@mcp.tool()
+def separate_harmonics_percussion(
+    file_path: str,
+    offset: float = 0.0,
+    duration: float = None,
+) -> str:
+    """
+    Separate the harmonics and percussions of the audio file.
+    """
+    y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
+    y_harmonic, y_percussive = librosa.effects.hpss(y)
+
+    name = file_path.split("/")[-1].split(".")[0]
+    harmonic_path = os.path.join(tempfile.gettempdir(), name + "_harmonic.wav")
+    percussive_path = os.path.join(tempfile.gettempdir(), name + "_percussive.wav")
+
+    sf.write(harmonic_path, y_harmonic, sr)
+    sf.write(percussive_path, y_percussive, sr)
+
+    return harmonic_path, percussive_path
+
+
+# @mcp.tool()
+# def onset_detect(file_path: str, offset: float = 0.0, duration: float = None) -> list:
+#     """
+#     Detects onsets in the audio file. Returns a list of time positions (in seconds) of the detected onsets.
+#     Offset and duration are in seconds.
+#     """
+#     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
+#     onsets = librosa.onset.onset_detect(y=y, units="time")
+#     return onsets.tolist()
 
 
 @mcp.tool()
@@ -130,7 +207,18 @@ def download_from_youtube(youtube_url: str) -> str:
     yt = YouTube(youtube_url)
     ys = yt.streams.get_audio_only()
     path = ys.download(filename=yt.video_id + ".mp4", output_path=tempfile.gettempdir())
-    return path
+
+    y, sr = librosa.load(path=path)
+    y_harmonic, y_percussive = librosa.effects.hpss(y)
+
+    name = path.split("/")[-1].split(".")[0]
+    harmonic_path = os.path.join(tempfile.gettempdir(), name + "_harmonic.wav")
+    percussive_path = os.path.join(tempfile.gettempdir(), name + "_percussive.wav")
+
+    sf.write(harmonic_path, y_harmonic, sr)
+    sf.write(percussive_path, y_percussive, sr)
+
+    return {"original": path, "harmonic": harmonic_path, "percussive": percussive_path}
 
 
 ###############################################################################
@@ -152,6 +240,8 @@ def analyze_audio() -> str:
         "- get_tempo(file_path: str, offset: float = 0.0, duration: float = None) -> float\n"
         "- get_beats(file_path: str, offset: float = 0.0, duration: float = None) -> list\n"
         "- get_chroma(file_path: str, offset: float = 0.0, duration: float = None, fmin: float = None, n_octaves: int = 7, interval: float = 1.0) -> list\n"
+        "- show_chroma(file_path: str, offset: float = 0.0, duration: float = None, fmin: float = None, n_octaves: int = 7) -> str\n"
+        "- separate_harmonics_percussion(file_path: str, offset: float = 0.0, duration: float"
         "- get_duration(file_path: str) -> float\n"
         "- download_from_url(url: str) -> str\n"
         "- download_from_youtube(youtube_url: str) -> str\n"

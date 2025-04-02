@@ -78,10 +78,14 @@ def get_chroma(
     It's better to have only harmonic sounds.
     """
     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-    chroma_cq = librosa.feature.chroma_cqt(y=y, fmin=fmin, n_octaves=n_octaves)
+    # 1 trame 1 second
+    hop_length = int(22050 * interval)
+    chroma_cq = librosa.feature.chroma_cqt(
+        y=y, fmin=fmin, n_octaves=n_octaves, hop_length=hop_length
+    )
 
     time_frames = np.arange(chroma_cq.shape[1])
-    time_seconds = librosa.frames_to_time(time_frames)
+    time_seconds = librosa.frames_to_time(time_frames, hop_length=hop_length)
     notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
     data_list = []
@@ -90,8 +94,7 @@ def get_chroma(
     for i, note_name in enumerate(notes):
         # Pour chaque frame temporel (colonne)
         for t, amplitude in zip(time_seconds, chroma_cq[i]):
-            if t >= offset and abs(t % interval) < 1e-2:
-                data_list.append({"note": note_name, "time": t, "amplitude": amplitude})
+            data_list.append({"note": note_name, "time": t, "amplitude": amplitude})
 
     return data_list
 
@@ -103,7 +106,7 @@ def show_chroma(
     duration: float = None,
     fmin: float = None,
     n_octaves: int = 7,
-    tempo_min: float = 60,
+    on_beats: bool = True,
 ) -> str:
     """
     Display the chroma feature of the audio file.
@@ -118,11 +121,21 @@ def show_chroma(
     """
     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
     chroma_cq = librosa.feature.chroma_cqt(y=y, fmin=fmin, n_octaves=n_octaves)
-
     plt.figure(figsize=(10, 4))
-    librosa.display.specshow(
-        chroma_cq, y_axis="chroma", x_axis="tempo", tempo_min=tempo_min
-    )
+    if on_beats:
+        tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
+        beats = librosa.util.fix_frames(beats, x_min=0)
+        chroma_sync = librosa.util.sync(chroma_cq, beats, aggregate=np.median)
+        beat_times = librosa.frames_to_time(beats)
+        librosa.display.specshow(
+            chroma_sync,
+            y_axis="chroma",
+            x_axis="time",
+            x_coords=beat_times,
+            key="C:maj",
+        )
+    else:
+        librosa.display.specshow(chroma_cq, y_axis="chroma", x_axis="tempo")
     plt.colorbar()
     plt.title("Chromagram")
     plt.tight_layout()
@@ -134,6 +147,41 @@ def show_chroma(
     with open(image_path, "rb") as f:
         data = f.read()
     return Image(data=data, format="png")
+
+
+# @mcp.tool()
+# def show_chroma_covariance(
+#     file_path: str,
+#     offset: float = 0.0,
+#     duration: float = None,
+#     fmin: float = None,
+#     n_octaves: int = 7,
+# ) -> str:
+#     """
+#     Display the chroma covariance feature of the audio file.
+#     Offset and duration are in seconds.
+#     fmin is the minimum frequency of the chroma feature.
+#     n_octaves is the number of octaves to include in the chroma feature.
+
+#     It's better to have only harmonic sounds.
+#     """
+#     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
+#     chroma_cq = librosa.feature.chroma_cqt(y=y, fmin=fmin, n_octaves=n_octaves)
+
+#     ccov = np.cov(chroma_cq)
+#     fig, ax = plt.subplots()
+#     img = librosa.display.specshow(
+#         ccov, y_axis="chroma", x_axis="chroma", key="C:maj", ax=ax
+#     )
+#     ax.set(title="Chroma covariance")
+#     fig.colorbar(img, ax=ax)
+#     image_path = os.path.join(tempfile.gettempdir(), "chroma_covariance.png")
+#     plt.savefig(image_path)
+#     plt.close()
+
+#     with open(image_path, "rb") as f:
+#         data = f.read()
+#     return Image(data=data, format="png")
 
 
 @mcp.tool()

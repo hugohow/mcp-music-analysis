@@ -25,211 +25,183 @@ mcp = FastMCP(
 
 
 @mcp.tool()
-def get_tempo(
+def load(
     file_path: str,
     offset: float = 0.0,
     duration: float = None,
-) -> float:
+) -> dict:
     """
-    Estimates the tempo (in BPM) of the given audio file using librosa.
+    Loads an audio file and returns the path to the audio time series
     Offset and duration are optional, in seconds.
-
-    It's better to have only percussive sounds.
+    Be careful, you will never know the name of the song.
     """
     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-    tempo, _ = librosa.beat.beat_track(y=y)
+
+    # stock y inside a csv file
+    name = file_path.split("/")[-1].split(".")[0] + "_y"
+    y_path = os.path.join(tempfile.gettempdir(), name + ".csv")
+    np.savetxt(y_path, y, delimiter=";")
+
+    D = librosa.stft(y)
+    harmonics, percussion = librosa.decompose.hpss(D)
+    # Save the harmonic and percussive components to separate files
+    # name_harmonic = file_path.split("/")[-1].split(".")[0] + "_harmonic"
+    # name_percussive = file_path.split("/")[-1].split(".")[0] + "_percussive"
+    # harmonic_path = os.path.join(tempfile.gettempdir(), name_harmonic + ".csv")
+    # percussive_path = os.path.join(tempfile.gettempdir(), name_percussive + ".csv")
+    # np.savetxt(harmonic_path, harmonics, delimiter=";")
+    # np.savetxt(percussive_path, percussion, delimiter=";")
+
+    return {
+        "y_path": y_path,
+        # "y_harmonic_path": harmonic_path,
+        # "y_percussive_path": percussive_path,
+    }
+
+
+@mcp.tool()
+def get_duration(path_audio_time_series_y: str) -> float:
+    """
+    Returns the total duration (in seconds) of the given audio time series.
+    """
+    y = np.loadtxt(path_audio_time_series_y, delimiter=";")
+    return librosa.get_duration(y=y)
+
+
+@mcp.tool()
+def tempo(
+    path_audio_time_series_y: str,
+    hop_length: int = 512,
+    start_bpm: float = 120,
+    std_bpm: float = 1.0,
+    ac_size: float = 8.0,
+    max_tempo: float = 320.0,
+) -> float:
+    """
+    Estimates the tempo (in BPM) of the given audio time series using librosa.
+    Offset and duration are optional, in seconds.
+    """
+    y = np.loadtxt(path_audio_time_series_y, delimiter=";")
+    tempo = librosa.feature.tempo(
+        y=y,
+        hop_length=hop_length,
+        start_bpm=start_bpm,
+        std_bpm=std_bpm,
+        ac_size=ac_size,
+        max_tempo=max_tempo,
+    )
     return tempo
 
 
 @mcp.tool()
-def get_beats(
-    file_path: str,
-    offset: float = 0.0,
-    duration: float = None,
-) -> list:
-    """
-    Returns a list of time positions (in seconds) of the detected beats.
-    Offset and duration are in seconds.
-
-    It's better to have only percussive sounds.
-    """
-    y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-    tempo, frames = librosa.beat.beat_track(y=y)
-    times = librosa.frames_to_time(frames)
-    return times.tolist()
-
-
-@mcp.tool()
-def get_chroma(
-    file_path: str,
-    offset: float = 0.0,
-    duration: float = None,
+def chroma_cqt(
+    path_audio_time_series_y: str,
+    hop_length: int = 512,
     fmin: float = None,
+    n_chroma: int = 12,
     n_octaves: int = 7,
-    interval: float = 1.0,
-) -> list:
+) -> str:
     """
-    Return the result of the chroma feature of the audio file.
-    Offset and duration are in seconds.
-    fmin is the minimum frequency of the chroma feature.
-    n_octaves is the number of octaves to include in the chroma feature.
-    interval is the time interval (in seconds) at which to sample the chroma feature.
-
-    It's better to have only harmonic sounds.
+    Computes the chroma CQT of the given audio time series using librosa.
+    The chroma CQT is a representation of the audio signal in terms of its
+    chromatic content, which is useful for music analysis.
+    The chroma CQT is computed using the following parameters:
+    - path_audio_time_series_y: The path to the audio time series (CSV file).
+        It's sometimes better to take harmonics only
+    - hop_length: The number of samples between frames.
+    - fmin: The minimum frequency of the chroma feature.
+    - n_chroma: The number of chroma bins (default is 12).
+    - n_octaves: The number of octaves to include in the chroma feature.
+    The chroma CQT is saved to a CSV file with the following columns:
+    - note: The note name (C, C#, D, etc.).
+    - time: The time position of the note in seconds.
+    - amplitude: The amplitude of the note at that time.
+    The path to the CSV file is returned.
     """
-    y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-    # 1 trame 1 second
-    hop_length = int(22050 * interval)
+    y = np.loadtxt(path_audio_time_series_y, delimiter=";")
     chroma_cq = librosa.feature.chroma_cqt(
-        y=y, fmin=fmin, n_octaves=n_octaves, hop_length=hop_length
+        y=y,
+        hop_length=hop_length,
+        fmin=fmin,
+        n_chroma=n_chroma,
+        n_octaves=n_octaves,
     )
-
+    # Save the chroma_cq to a CSV file
+    name = path_audio_time_series_y.split("/")[-1].split(".")[0] + "_chroma_cqt"
+    chroma_cq_path = os.path.join(tempfile.gettempdir(), name + ".csv")
+    notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
     time_frames = np.arange(chroma_cq.shape[1])
     time_seconds = librosa.frames_to_time(time_frames, hop_length=hop_length)
-    notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
-    data_list = []
-
-    # Pour chaque note (ligne)
-    for i, note_name in enumerate(notes):
-        # Pour chaque frame temporel (colonne)
-        for t, amplitude in zip(time_seconds, chroma_cq[i]):
-            data_list.append({"note": note_name, "time": t, "amplitude": amplitude})
-
-    return data_list
+    with open(chroma_cq_path, "w") as f:
+        f.write("note,time,amplitude\n")
+        for i, note in enumerate(notes):
+            for t_index, amplitude in enumerate(chroma_cq[i]):
+                t = time_seconds[t_index]
+                f.write(f"{note},{t},{amplitude}\n")
+    # Return the path to the CSV file
+    return chroma_cq_path
 
 
 @mcp.tool()
-def show_chroma(
-    file_path: str,
-    offset: float = 0.0,
-    duration: float = None,
-    fmin: float = None,
-    n_octaves: int = 7,
-    on_beats: bool = True,
+def mfcc(
+    path_audio_time_series_y: str,
 ) -> str:
     """
-    Display the chroma feature of the audio file.
-    Offset and duration are in seconds.
-    fmin is the minimum frequency of the chroma feature.
-    n_octaves is the number of octaves to include in the chroma feature.
-
-    It's better to have only harmonic sounds.
-
-
-    It's just for visualisation, but use get_chroma for analysis.
+    Computes the MFCC of the given audio time series using librosa.
+    The MFCC is a representation of the audio signal in terms of its
+    spectral content, which is useful for music analysis.
+    The MFCC is computed using the following parameters:
+    - path_audio_time_series_y: The path to the audio time series (CSV file).
+        It's sometimes better to take harmonics only
     """
-    y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-    chroma_cq = librosa.feature.chroma_cqt(y=y, fmin=fmin, n_octaves=n_octaves)
-    plt.figure(figsize=(10, 4))
-    if on_beats:
-        tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
-        beats = librosa.util.fix_frames(beats, x_min=0)
-        chroma_sync = librosa.util.sync(chroma_cq, beats, aggregate=np.median)
-        beat_times = librosa.frames_to_time(beats)
-        librosa.display.specshow(
-            chroma_sync,
-            y_axis="chroma",
-            x_axis="time",
-            x_coords=beat_times,
-            key="C:maj",
-        )
-    else:
-        librosa.display.specshow(chroma_cq, y_axis="chroma", x_axis="tempo")
-    plt.colorbar()
-    plt.title("Chromagram")
-    plt.tight_layout()
-
-    image_path = os.path.join(tempfile.gettempdir(), "chroma.png")
-    plt.savefig(image_path)
-    plt.close()
-
-    with open(image_path, "rb") as f:
-        data = f.read()
-    return Image(data=data, format="png")
-
-
-# @mcp.tool()
-# def show_chroma_covariance(
-#     file_path: str,
-#     offset: float = 0.0,
-#     duration: float = None,
-#     fmin: float = None,
-#     n_octaves: int = 7,
-# ) -> str:
-#     """
-#     Display the chroma covariance feature of the audio file.
-#     Offset and duration are in seconds.
-#     fmin is the minimum frequency of the chroma feature.
-#     n_octaves is the number of octaves to include in the chroma feature.
-
-#     It's better to have only harmonic sounds.
-#     """
-#     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-#     chroma_cq = librosa.feature.chroma_cqt(y=y, fmin=fmin, n_octaves=n_octaves)
-
-#     ccov = np.cov(chroma_cq)
-#     fig, ax = plt.subplots()
-#     img = librosa.display.specshow(
-#         ccov, y_axis="chroma", x_axis="chroma", key="C:maj", ax=ax
-#     )
-#     ax.set(title="Chroma covariance")
-#     fig.colorbar(img, ax=ax)
-#     image_path = os.path.join(tempfile.gettempdir(), "chroma_covariance.png")
-#     plt.savefig(image_path)
-#     plt.close()
-
-#     with open(image_path, "rb") as f:
-#         data = f.read()
-#     return Image(data=data, format="png")
+    y = np.loadtxt(path_audio_time_series_y, delimiter=";")
+    mfcc = librosa.feature.mfcc(y=y)
+    # Save the mfcc to a CSV file
+    name = path_audio_time_series_y.split("/")[-1].split(".")[0] + "_mfcc"
+    mfcc_path = os.path.join(tempfile.gettempdir(), name + ".csv")
+    np.savetxt(mfcc_path, mfcc, delimiter=";")
+    # Return the path to the CSV file
+    return mfcc_path
 
 
 @mcp.tool()
-def separate_harmonics_percussion(
-    file_path: str,
-    offset: float = 0.0,
-    duration: float = None,
+def beat_track(
+    path_audio_time_series_y: str,
+    hop_length: int = 512,
+    start_bpm: float = 120,
+    tightness: int = 100,
+    units: str = "frames",
 ) -> str:
     """
-    Separate the harmonics and percussions of the audio file.
+    Computes the beat track of the given audio time series using librosa.
+    The beat track is a representation of the audio signal in terms of its
+    rhythmic content, which is useful for music analysis.
+    The beat track is computed using the following parameters:
+    - hop_length: The number of samples between frames.
+    - start_bpm: The initial estimate of the tempo (in BPM).
+    - tightness: The tightness of the beat tracking (default is 100).
+    - units: The units of the beat track (default is "frames"). It can be frames, samples, time.
     """
-    y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-    y_harmonic, y_percussive = librosa.effects.hpss(y)
-
-    name = file_path.split("/")[-1].split(".")[0]
-    harmonic_path = os.path.join(tempfile.gettempdir(), name + "_harmonic.wav")
-    percussive_path = os.path.join(tempfile.gettempdir(), name + "_percussive.wav")
-
-    sf.write(harmonic_path, y_harmonic, sr)
-    sf.write(percussive_path, y_percussive, sr)
-
-    return harmonic_path, percussive_path
-
-
-# @mcp.tool()
-# def onset_detect(file_path: str, offset: float = 0.0, duration: float = None) -> list:
-#     """
-#     Detects onsets in the audio file. Returns a list of time positions (in seconds) of the detected onsets.
-#     Offset and duration are in seconds.
-#     """
-#     y, sr = librosa.load(path=file_path, offset=offset, duration=duration)
-#     onsets = librosa.onset.onset_detect(y=y, units="time")
-#     return onsets.tolist()
-
-
-@mcp.tool()
-def get_duration(file_path: str) -> float:
-    """
-    Returns the total duration (in seconds) of the given audio file.
-    """
-    y, sr = librosa.load(path=file_path)
-    return librosa.get_duration(y=y)
+    y = np.loadtxt(path_audio_time_series_y, delimiter=";")
+    tempo, beats = librosa.beat.beat_track(
+        y=y,
+        hop_length=hop_length,
+        start_bpm=start_bpm,
+        tightness=tightness,
+        units=units,
+    )
+    return {
+        "tempo": tempo,
+        "beats": beats,
+    }
 
 
 @mcp.tool()
 def download_from_url(url: str) -> str:
     """
     Downloads a file from a given URL and returns the path to the downloaded file.
+    Be careful, you will never know the name of the song.
     """
 
     # mettre une exception si ce n'est pas un fichier audio !
@@ -250,23 +222,13 @@ def download_from_url(url: str) -> str:
 def download_from_youtube(youtube_url: str) -> str:
     """
     Downloads a file from a given youtube URL and returns the path to the downloaded file.
-    Don't try to identify the song, you cannot do it, it's too hard.
+    Be careful, you will never know the name of the song.
     """
     yt = YouTube(youtube_url)
     ys = yt.streams.get_audio_only()
     path = ys.download(filename=yt.video_id + ".mp4", output_path=tempfile.gettempdir())
 
-    y, sr = librosa.load(path=path)
-    y_harmonic, y_percussive = librosa.effects.hpss(y)
-
-    name = path.split("/")[-1].split(".")[0]
-    harmonic_path = os.path.join(tempfile.gettempdir(), name + "_harmonic.wav")
-    percussive_path = os.path.join(tempfile.gettempdir(), name + "_percussive.wav")
-
-    sf.write(harmonic_path, y_harmonic, sr)
-    sf.write(percussive_path, y_percussive, sr)
-
-    return {"original": path, "harmonic": harmonic_path, "percussive": percussive_path}
+    return path
 
 
 ###############################################################################
@@ -285,12 +247,14 @@ def analyze_audio() -> str:
         "the path to an audio file and call the tools listed below to extract "
         "various audio features.\n\n"
         "Available tools:\n"
-        "- get_tempo(file_path: str, offset: float = 0.0, duration: float = None) -> float\n"
-        "- get_beats(file_path: str, offset: float = 0.0, duration: float = None) -> list\n"
-        "- get_chroma(file_path: str, offset: float = 0.0, duration: float = None, fmin: float = None, n_octaves: int = 7, interval: float = 1.0) -> list\n"
-        "- show_chroma(file_path: str, offset: float = 0.0, duration: float = None, fmin: float = None, n_octaves: int = 7) -> str\n"
-        "- separate_harmonics_percussion(file_path: str, offset: float = 0.0, duration: float"
-        "- get_duration(file_path: str) -> float\n"
+        "- load(file_path: str, offset: float = 0.0, duration: float = None) -> dict\n"
+        "- tempo(path_audio_time_series_y: str, hop_length: int = 512, start_bpm: float = 120, "
+        "std_bpm: float = 1.0, ac_size: float = 8.0, max_tempo: float = 320.0) -> float\n"
+        "- chroma_cqt(path_audio_time_series_y: str, hop_length: int = 512, fmin: float = None, "
+        "n_chroma: int = 12, n_octaves: int = 7) -> str\n"
+        "- beat_track(path_audio_time_series_y: str, hop_length: int = 512, start_bpm: float = 120, "
+        "tightness: int = 100, units: str = 'frames') -> dict\n"
+        "- get_duration(path_audio_time_series_y: str) -> float\n"
         "- download_from_url(url: str) -> str\n"
         "- download_from_youtube(youtube_url: str) -> str\n"
     )

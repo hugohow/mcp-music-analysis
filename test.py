@@ -1,3 +1,6 @@
+# idée -> plus faire des fichiers ou des csv que claude peut comprendre au lieu de faire des chemins
+# trop compliqués
+
 import librosa
 import numpy as np
 import soundfile as sf
@@ -7,44 +10,40 @@ import matplotlib.pyplot as plt
 path = "/tmp/TgntkGc5iBo.mp4"
 
 y, sr = librosa.load(path=path)
-chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
-tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
 
-# beats contains the frame indices of each detected beat
-# for synchronization and visualization, we'll need to expand this
-# to cover the limits of the data.  This can be done as follows:
-beats = librosa.util.fix_frames(beats, x_min=0)
 
-# Now beat-synchronize the chroma features
-chroma_sync = librosa.util.sync(chroma, beats, aggregate=np.median)
+hop_length = 512
+fmin = librosa.note_to_hz("C2")
+n_chroma = 12
+n_octaves = 7
 
-# For visualization, we can convert to time (in seconds)
-beat_times = librosa.frames_to_time(beats)
 
-# We'll plot the synchronized and unsynchronized features next
-# to each other
-
-fig, ax = plt.subplots(nrows=2, sharex=True)
-img = librosa.display.specshow(
-    chroma, y_axis="chroma", x_axis="time", ax=ax[0], key="Eb:maj"
+chroma_cq = librosa.feature.chroma_cqt(
+    y=y,
+    hop_length=hop_length,
+    fmin=fmin,
+    n_chroma=n_chroma,
+    n_octaves=n_octaves,
 )
-ax[0].set(title="Uniform time sampling")
-ax[0].label_outer()
+# Save the chroma_cq to a CSV file
+# name = path_audio_time_series_y.split("/")[-1].split(".")[0] + "_chroma_cqt"
+# chroma_cq_path = os.path.join(tempfile.gettempdir(), name + ".csv")
+notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+time_frames = np.arange(chroma_cq.shape[1])
+sr = 22050
+time_seconds = librosa.frames_to_time(time_frames, sr=sr, hop_length=hop_length)
 
-librosa.display.specshow(
-    chroma_sync,
-    y_axis="chroma",
-    x_axis="time",
-    x_coords=beat_times,
-    ax=ax[1],
-    key="Eb:maj",
-)
-ax[1].set(title="Beat-synchronous sampling")
-fig.colorbar(img, ax=ax)
+with open("chroma.csv", "w") as f:
+    f.write("note,time,amplitude\n")
+    for i, note in enumerate(notes):
+        for t_index, amplitude in enumerate(chroma_cq[i]):
+            t = time_seconds[t_index]
+            f.write(f"{note},{t},{amplitude}\n")
+# (8303584,)
 
-# For clarity, we'll zoom in on a 15-second patch
-# ax[1].set(xlim=[10, 25])
-plt.show()
+
+# chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
+
 
 # Sa = librosa.note_to_hz("F2")
 

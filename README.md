@@ -1,4 +1,5 @@
 # MCP Music Analysis
+[![smithery badge](https://smithery.ai/badge/@hugohow/mcp-audio-analysis)](https://smithery.ai/server/@hugohow/mcp-audio-analysis)
 
 This repository contains a **Model Context Provider (MCP)** that uses MCP and [librosa](https://librosa.org/) for audio analysis on audio in local, youtube link, or audio link.
 
@@ -10,6 +11,16 @@ This repository contains a **Model Context Provider (MCP)** that uses MCP and [l
 </div>
 
 ## Installation
+
+### Installing via Smithery
+
+To install MCP Music Analysis for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@hugohow/mcp-audio-analysis):
+
+```bash
+npx -y @smithery/cli install @hugohow/mcp-audio-analysis --client claude
+```
+
+### Manual Installation
 
 ```bash
 # Clone repository

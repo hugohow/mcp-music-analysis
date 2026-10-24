@@ -1,7 +1,7 @@
 [![MseeP.ai Security Assessment Badge](https://mseep.net/pr/hugohow-mcp-music-analysis-badge.png)](https://mseep.ai/app/hugohow-mcp-music-analysis)
 
 # MCP Music Analysis
-[![smithery badge](https://smithery.ai/badge/@hugohow/mcp-music-analysis)](https://smithery.ai/server/@hugohow/mcp-music-analysis)
+[![LightNow capabilities](https://lightnow.ai/badge/io.github.hugohow/mcp-music-analysis)](https://lightnow.ai/servers/io.github.hugohow/mcp-music-analysis)
 
 This repository contains a **Model Context Provider (MCP)** that uses MCP and [librosa](https://librosa.org/) for audio analysis on audio in local, youtube link, or audio link.
 
